@@ -30,23 +30,32 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CheckList() {
-    Column() {
-        CheckBox()
-        Scaffold(
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = {  }
-                ) {
-                    Icon(Icons.Filled.Add,"", tint = Color.White)
-                }
-            },
-            floatingActionButtonPosition = FabPosition.End
-        ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .padding(bottom = paddingValues.calculateBottomPadding())
-            ) {}
+    var count by rememberSaveable { mutableStateOf(0) }
+
+    FloatingBtn(onFloatingClicked = { count += 1 })
+    LazyColumn {
+        items(count = count) {
+            CheckBox()
         }
+    }
+}
+
+@Composable
+fun FloatingBtn(onFloatingClicked: () -> Unit) {
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onFloatingClicked
+            ) {
+                Icon(Icons.Filled.Add,"", tint = Color.White)
+            }
+        },
+        floatingActionButtonPosition = FabPosition.End
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(bottom = paddingValues.calculateBottomPadding())
+        ) {}
     }
 }
 
