@@ -1,18 +1,33 @@
 package com.example.todolist
 
 import android.os.Bundle
+import android.view.Surface
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.SemanticsProperties.Focused
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.todolist.ui.theme.ToDoListTheme
@@ -28,11 +43,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// 전체 화면 구성
 @Composable
 fun CheckList() {
-    var count by rememberSaveable { mutableStateOf(0) }
+    var count by rememberSaveable { mutableStateOf(0) } // Check Box 개수
 
     FloatingBtn(onFloatingClicked = { count += 1 })
+    // count만큼 Check Box 생성
     LazyColumn {
         items(count = count) {
             CheckBox()
@@ -42,15 +59,25 @@ fun CheckList() {
 
 @Composable
 fun FloatingBtn(onFloatingClicked: () -> Unit) {
+    val focusManager = LocalFocusManager.current
+    val interactionSource = remember { MutableInteractionSource() }
+
     Scaffold(
+        modifier = Modifier
+            .clickable( // 화면 클릭 가능
+                interactionSource = interactionSource,
+                indication = null   // click effect null
+            ) { focusManager.clearFocus() },    // click 시 focus 제거
+
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onFloatingClicked
             ) {
-                Icon(Icons.Filled.Add,"", tint = Color.White)
+                // floating btn icon (+)
+                Icon(Icons.Filled.Add, null, tint = Color.White)
             }
         },
-        floatingActionButtonPosition = FabPosition.End
+        floatingActionButtonPosition = FabPosition.End  // 우하단 배치
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -63,35 +90,57 @@ fun FloatingBtn(onFloatingClicked: () -> Unit) {
 fun CheckBox() {
     var checked by rememberSaveable { mutableStateOf(false) }
     var text by rememberSaveable { mutableStateOf("") }
+    val focusRequester = remember { FocusRequester() }
 
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colors.background
-    ) {
-        Column {
-            Card(
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Row {
-                    Checkbox(
-                        checked = checked,
-                        onCheckedChange = { checked = !checked }
-                    )
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = text,
-                        onValueChange = { text = it },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.textFieldColors(
-                            backgroundColor = Color.White,
-                            cursorColor = Color.Black,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
+    val iconColor: Color
+    val backgroundColor: Color
+    val textColor: Color
+
+    // check 여부에 따른 색상 설정
+    if (checked) {
+        iconColor = Color.White
+        backgroundColor = Color.Black
+        textColor = Color.White
+    } else {
+        iconColor = Color.LightGray
+        backgroundColor = Color.White
+        textColor = Color.Black
+    }
+
+    // Check Box (TextField)
+    Column {
+        Card(
+            modifier = Modifier.padding(8.dp)
+        ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester = focusRequester),
+                value = text,
+                onValueChange = { text = it },
+                shape = RoundedCornerShape(8.dp),
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = backgroundColor,
+                    cursorColor = Color.Black,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    textColor = textColor
+                ),
+                leadingIcon = { // Check Icon
+                    IconButton(onClick = { checked = !checked }) {  // icon click event
+                        Icon(
+                            tint = iconColor,
+                            imageVector = Icons.Outlined.Check,
+                            contentDescription = null
                         )
-                    )
+                    }
                 }
-            }
+            )
         }
+    }
+    // TextField focus request
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
     }
 }
 
