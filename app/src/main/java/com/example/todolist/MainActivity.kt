@@ -1,33 +1,24 @@
 package com.example.todolist
 
 import android.os.Bundle
-import android.view.Surface
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.MaterialTheme.colors
-import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.semantics.SemanticsProperties.Focused
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.todolist.ui.theme.ToDoListTheme
@@ -47,18 +38,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CheckList() {
     var count by rememberSaveable { mutableStateOf(0) } // Check Box 개수
-
-    FloatingBtn(onFloatingClicked = { count += 1 })
-    // count만큼 Check Box 생성
-    LazyColumn {
-        items(count = count) {
-            CheckBox()
-        }
-    }
-}
-
-@Composable
-fun FloatingBtn(onFloatingClicked: () -> Unit) {
     val focusManager = LocalFocusManager.current
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -70,19 +49,27 @@ fun FloatingBtn(onFloatingClicked: () -> Unit) {
             ) { focusManager.clearFocus() },    // click 시 focus 제거
 
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onFloatingClicked
-            ) {
-                // floating btn icon (+)
-                Icon(Icons.Filled.Add, null, tint = Color.White)
+            FloatingBtn(
+                onFloatingClicked = { count += 1 }
+            )},
+        floatingActionButtonPosition = FabPosition.End
+    ) {
+        // count만큼 Check Box 생성
+        LazyColumn {
+            items(count = count) {
+                CheckBox()
             }
-        },
-        floatingActionButtonPosition = FabPosition.End  // 우하단 배치
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(bottom = paddingValues.calculateBottomPadding())
-        ) {}
+        }
+    }
+}
+
+@Composable
+fun FloatingBtn(onFloatingClicked: () -> Unit) {
+    FloatingActionButton(
+        onClick = onFloatingClicked
+    ) {
+        // floating btn icon (+)
+        Icon(Icons.Filled.Add, null, tint = Color.White)
     }
 }
 
@@ -98,12 +85,12 @@ fun CheckBox() {
 
     // check 여부에 따른 색상 설정
     if (checked) {
-        iconColor = Color.White
         backgroundColor = Color.Black
+        iconColor = Color.White
         textColor = Color.White
     } else {
-        iconColor = Color.LightGray
         backgroundColor = Color.White
+        iconColor = Color.LightGray
         textColor = Color.Black
     }
 
@@ -112,7 +99,7 @@ fun CheckBox() {
         Card(
             modifier = Modifier.padding(8.dp)
         ) {
-            OutlinedTextField(
+            TextField(
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester = focusRequester),
@@ -121,7 +108,7 @@ fun CheckBox() {
                 shape = RoundedCornerShape(8.dp),
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = backgroundColor,
-                    cursorColor = Color.Black,
+                    cursorColor = textColor,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     textColor = textColor
