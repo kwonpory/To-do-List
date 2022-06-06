@@ -1,6 +1,7 @@
 package com.example.todolist
 
 import android.os.Bundle
+import android.widget.CheckBox
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -47,14 +48,23 @@ fun CheckList() {
                 interactionSource = interactionSource,
                 indication = null   // click effect null
             ) { focusManager.clearFocus() },    // click 시 focus 제거
-
+        // App Bar
+        topBar = {
+            TopAppBar(
+                title = { Text("To do List") },
+                backgroundColor = Color.Unspecified,
+                contentColor = MaterialTheme.colors.onSecondary,
+                elevation = 0.dp
+            )
+        },
+        // Floating Btn
         floatingActionButton = {
             FloatingBtn(
                 onFloatingClicked = { count += 1 }
             )},
         floatingActionButtonPosition = FabPosition.End
     ) {
-        // count만큼 Check Box 생성
+        // Check Box
         LazyColumn {
             items(count = count) {
                 CheckBox()
@@ -126,9 +136,9 @@ fun CheckBox() {
         }
     }
     // TextField focus request
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-    }
+//    LaunchedEffect(Unit) {
+//        focusRequester.requestFocus()
+//    }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
